@@ -1,0 +1,205 @@
+<html>
+<head>
+<script src='jquery-1.7.1.min.js'></script>
+<style type='text/css'>
+#playfield .cell {
+  cursor:pointer;
+  font-size:200%;
+}
+</style>
+</head>
+<body>
+<h1>MEMORY</h1>
+<div id='playfield'>
+</div>
+
+<script>
+
+Array.prototype.shuffle=function() {
+  this.sort(Math.random);
+};
+Array.prototype.remove = function(from, to) {
+  var array=this;
+  var rest = array.slice((to || from) + 1 || array.length);
+  array.length = from < 0 ? array.length + from : from;
+  return array.push.apply(array, rest);
+};
+Array.prototype.erase=function(e) {
+  this.remove(this.indexOf(e));
+};
+var Signal=function() {
+  var listeners=[];
+  this.call=function() {
+    var args=arguments;
+    $.each(listeners,function(k,listener) {
+      listener.fct.apply(listener.obj,args);
+    });
+  };
+  this.add=function(receiver,fct) {
+    listeners.push({fct:fct,obj:receiver});
+  }
+};
+
+var PlayfieldModel=function(w,h) {
+  var field=null;
+  var cards=[];
+  var opened=[];
+
+
+  function init() {
+    var i;
+    for(i=0;i<w*h/2;i++) {
+      cards.push({id:i,text:i});
+    }
+    field=[];
+    $.each(cards,function(k,v) {field.push(v);});
+    $.each(cards,function(k,v) {field.push(v);});
+    field.shuffle();
+    for(i=0;i<w*h;i++) {
+      field[i].status="closed";
+    }
+  }
+  init();
+
+  var o= {
+    width:w,
+    height:h,
+    cellChanged:new Signal(),
+    field:function(x,y,val) {
+      if(typeof y ==="undefined") {
+        y=x.y;x=x.x;
+      }
+      var p=y*this.width+x;
+      if(val) {
+        field[p]=val;
+        this.cellChanged.call({x:x,y:y});
+      }
+      return field[p];
+    },
+    opened:function() { return opened;},
+    open:function(cell) { 
+      opened.push(cell);
+      this.toState([cell],"opened");
+    },
+
+    closeAll:function() {
+      this.toState(opened,"closed");
+      opened=[];
+    },
+    stickOpened:function(cells) {
+      this.toState(opened,"stick");
+      opened=[];
+    },
+
+    toState:function(cells,state) {
+      var self=this;
+      $.each(cells,function(k,cell) {
+        self.field(cell.x,cell.y).status=state;
+        self.cellChanged.call(cell);
+      });
+    }
+  };
+  return o;
+}(3,4);
+
+var PlayfieldView=function(el,model) {
+  var clickDisabled=false;
+  var o={
+    block:function(ms,callback) {
+      clickDisabled=true;
+      setTimeout(function() {
+        clickDisabled=false;
+        callback();
+      },ms);
+    },
+    cellId:function(x,y) {
+      return "cell_"+x+"_"+y;
+    },
+    cellFromId:function(id) {
+      var p=id.substr(5).split("_");
+      return {x:parseInt(p[0]),y:parseInt(p[1])};
+    },
+    cellContent:function(x,y) {
+      if(model.field(x,y).status=="closed")
+        return "X";
+      else
+        return model.field(x,y).text;
+    },
+    init:function()  {
+      var x,y,html;
+      html+="<table>";
+      for(y=0;y<model.height;y++) {
+        html+="<tr>";
+        for(x=0;x<model.width;x++) {
+          html+="<td><div class='cell' id='"+this.cellId(x,y)+"'>";
+          html+=this.cellContent(x,y);
+          html+="</div></td>";
+        }
+        html+="</tr>";
+      }
+      html+="</table>";
+      $(el).html(html);
+      var self=this;
+      $(".cell",el).click(function(e) {
+        if(clickDisabled)
+          return;
+        if(self.cellClicked) {
+          var c=self.cellFromId(e.currentTarget.id);
+          self.cellClicked(c);
+        }
+      });
+      model.cellChanged.add(this,this.update);
+    },
+    cellClicked:null,
+
+    update:function(cell) {
+      var id="#"+this.cellId(cell.x,cell.y);
+      $(id).html(this.cellContent(cell.x,cell.y));
+      if(model.field(cell).status=="stick")
+        $(id).unbind("click");
+    }
+  };
+
+
+  return o;
+
+}("#playfield",PlayfieldModel);
+
+
+var PlayFieldController=function(model,view)  {
+  var o={
+    cellClicked:function(cell) {
+      model.open(cell);
+      var opened=model.opened();
+      if(opened.length>2)
+        model.close(opened);
+      else if(opened.length==2) {
+        view.block(500,function() {
+          var cells=$.map(opened,function(v,i) {return model.field(v);});
+          if(cells[0].id==cells[1].id) {
+            model.stickOpened();
+          } else {
+            model.closeAll();
+          }
+        });
+      }
+      
+    },
+    init:function() {
+      var self=this;
+      view.init();
+      view.cellClicked=function(cell) {
+        self.cellClicked(cell);
+      };
+    }
+  };
+  return o;
+}(PlayfieldModel,PlayfieldView);
+
+PlayFieldController.init();
+
+</script>
+
+
+</body>
+</html>
