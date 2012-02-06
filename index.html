@@ -12,7 +12,7 @@
 <h1>MEMORY</h1>
 <div id='playfield'>
 </div>
-
+<div id='won' style='display:none;'>Won !</div>
 <script>
 
 Array.prototype.shuffle=function() {
@@ -77,6 +77,7 @@ var PlayfieldModel=function(w,h) {
       return field[p];
     },
     opened:function() { return opened;},
+    closed:function() { return $.grep(field,function(v,i){return v.status=="closed";});},
     open:function(cell) { 
       opened.push(cell);
       this.toState([cell],"opened");
@@ -100,7 +101,7 @@ var PlayfieldModel=function(w,h) {
     }
   };
   return o;
-}(3,4);
+}(3,2);
 
 var PlayfieldView=function(el,model) {
   var clickDisabled=false;
@@ -126,7 +127,7 @@ var PlayfieldView=function(el,model) {
         return model.field(x,y).text;
     },
     init:function()  {
-      var x,y,html;
+      var x,y,html="";
       html+="<table>";
       for(y=0;y<model.height;y++) {
         html+="<tr>";
@@ -178,6 +179,9 @@ var PlayFieldController=function(model,view)  {
           var cells=$.map(opened,function(v,i) {return model.field(v);});
           if(cells[0].id==cells[1].id) {
             model.stickOpened();
+            if(model.closed().length==0) {
+              $("#won").show();
+            }
           } else {
             model.closeAll();
           }
