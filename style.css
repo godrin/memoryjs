@@ -1,0 +1,38 @@
+#playfield table {
+  margin-left:15%;
+  margin-right:15%;
+  width:70%;
+  height:70%;
+  margin-top:5%;  
+}
+#playfield .cellParent {
+  width:80px;
+  height:80px;
+}
+#playfield .cell {
+  border:1px solid #baab00;
+  cursor:pointer;
+  font-size:200%;
+  text-align:center;
+  background-color:#FF7;
+  background-image:url(pics/bg.png);
+  width:78px;
+  height:78px;
+}
+#playfield .cell img {
+  width:100%;
+  height:100%;
+}
+#playfield.blocked .cell {
+  cursor:default;
+}
+#playfield .cell.opened, #playfield .cell.stick {
+  background-color:#EEE;
+  background-image:none;
+}
+#playfield .cell.stick {
+  display:none;
+}
+.cell.hidden {
+  display:none;
+}
