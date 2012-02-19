@@ -1,13 +1,5 @@
 
 var PlayFieldController=function(model,view)  {
-};
-$(function() {
-  var el=$("#playfield");
-  console.log("EL",el);
-  var model=new PlayfieldWorldModel(4,5);
-  var view=new PlayfieldView(el,model);
-  var cntrl=new PlayFieldController(model,view);
-
   $.each(view.getCells(),function(k,cell) {
     cell.clicked.add(this,function(self){
       if(cell.model.state=="closed") {
@@ -32,7 +24,16 @@ $(function() {
 	}
       }
     });
-  }); 
+  });
+
+
+};
+$(function() {
+  var el=$("#playfield");
+  console.log("EL",el);
+  var model=new PlayfieldWorldModel(4,5);
+  var view=new PlayfieldView(el,model);
+  var cntrl=new PlayFieldController(model,view);
 });
 
 

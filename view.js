@@ -60,7 +60,53 @@ var PlayfieldView=function(el,model) {
   var cells=[];
   var blocked=false;
 
+  function setCorrectPosition(cell,x,y) {
+    var padding=$(window).width()/100;
+
+    var maxHeight,maxWidth;
+    maxWidth=el.width();
+    maxHeight=$(window).height()-el.offset().top;
+
+    var cellWidth=maxWidth/model.w;
+    var cellHeight=maxHeight/model.h;
+
+    if(cellWidth>cellHeight)
+      cellWidth=cellHeight;
+    else
+      cellHeight=cellWidth;
+
+    var xdelta=(maxWidth-(cellWidth*model.w))/2.0;
+
+    cell.css({width:""+(cellWidth-padding)+"px",height:cellHeight-padding,top:y*cellHeight,left:xdelta+x*cellWidth,position:'absolute'});
+
+
+  }
+
   function createHtml() {
+    var html=$("<div></div>");
+    var x,y;
+    for(y=0;y<model.h;y++) {
+      for(x=0;x<model.w;x++) {
+	var cell=$("<div class='cellParent'></td>");
+	var cellView=new PlayfieldCellView(model.get(x,y),cell,self);
+	cells.push(cellView);
+
+	setCorrectPosition(cell,x,y);
+	var f=function(px,py,pcell) {
+	  $(window).resize(function() {
+	    setCorrectPosition(pcell,px,py);
+	  });
+	};
+	f(x,y,cell);
+	html.append(cell);
+      }
+    }
+    return html;
+  }
+
+
+
+  function createHtmlOld() {
     var x,y;
     var html=$("<table></table>");
     for(y=0;y<model.h;y++) {

@@ -1,9 +1,6 @@
-#playfield table {
-  margin-left:15%;
-  margin-right:15%;
-  width:70%;
-  height:70%;
-  margin-top:5%;  
+#playfield {
+  margin:0px;  
+  position:relative;
 }
 #playfield .cellParent {
   width:80px;
@@ -16,8 +13,10 @@
   text-align:center;
   background-color:#FF7;
   background-image:url(pics/bg.png);
-  width:78px;
-  height:78px;
+/*  width:78px;
+  height:78px;*/
+  width:100%;
+  height:100%;
 }
 #playfield .cell img {
   width:100%;
